@@ -20,7 +20,7 @@
 
 namespace Metasound
 {
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ExpressionFloat"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_Expression"
 
     namespace ExpressionFloatNode
     {

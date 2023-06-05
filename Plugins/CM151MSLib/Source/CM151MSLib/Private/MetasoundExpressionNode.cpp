@@ -1,10 +1,10 @@
-#include "MetasoundExpressionFloatNode.h"
+#include "MetasoundExpressionNode.h"
 
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK || EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
 #include <string>
 #endif
 
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ExpressionFloatNode"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ExpressionNode"
 
 namespace Metasound
 {
