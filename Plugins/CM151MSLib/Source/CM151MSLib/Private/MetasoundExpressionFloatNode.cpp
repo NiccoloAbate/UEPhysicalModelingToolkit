@@ -1,22 +1,100 @@
 #include "MetasoundExpressionFloatNode.h"
 
+#if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK || EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
+#include <string>
+#endif
+
 #define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ExpressionFloatNode"
 
 namespace Metasound
 {
+    namespace FExpressionOperatorPrivate
+    {
+#if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK || EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
+        void ToLower(std::string& s)
+        {
+            std::transform(s.begin(), s.end(), s.begin(),
+                [](unsigned char c) { return std::tolower(c); });
+        }
+#endif
+
+        template <typename ValueType>
+        struct TExpression
+        {
+            bool bIsSupported = false;
+        };
+
+        template <>
+        struct TExpression<float>
+        {
+#if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
+
+#elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
+            static void SampleExpression(te_expr* Expr, double& X, const float& In, float& Out)
+            {
+                X = (double)In;
+                Out = (float)te_eval(Expr);
+            }
+#endif
+
+            static TDataReadReference<float> CreateInRefData(const FCreateOperatorParams& InParams)
+            {
+                using namespace ExpressionFloatNode;
+
+                const FDataReferenceCollection& InputCollection = InParams.InputDataReferences;
+                const FInputVertexInterface& InputInterface = InParams.Node.GetVertexInterface().GetInputInterface();
+
+                return InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameData), InParams.OperatorSettings);
+            }
+        };
+
+        template <>
+        struct TExpression<FAudioBuffer>
+        {
+#if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
+
+#elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
+            static void SampleExpression(te_expr* Expr, double& X, const FAudioBuffer& In, FAudioBuffer& Out)
+            {
+                const float* InAudio = In.GetData();
+                float* OutAudio = Out.GetData();
+
+                const int NumSamples = In.Num();
+                for (int i = 0; i < NumSamples; ++i)
+                {
+                    X = (double)InAudio[i];
+                    OutAudio[i] = (float)te_eval(Expr);
+                }
+            }
+#endif
+
+            static TDataReadReference<FAudioBuffer> CreateInRefData(const FCreateOperatorParams& InParams)
+            {
+                using namespace ExpressionFloatNode;
+
+                const FDataReferenceCollection& InputCollection = InParams.InputDataReferences;
+                const FInputVertexInterface& InputInterface = InParams.Node.GetVertexInterface().GetInputInterface();
+
+                return InputCollection.GetDataReadReferenceOrConstruct<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InParamNameData), InParams.OperatorSettings);
+            }
+        };
+    }
+
     //------------------------------------------------------------------------------------
-    // FExpressionFloatOperator
+    // FExpressionOperator
     //------------------------------------------------------------------------------------
-    FExpressionFloatOperator::FExpressionFloatOperator(const FOperatorSettings& InSettings, const FStringReadRef& InStringInput, const FFloatReadRef& InFloatInput)
-        : StringInput(InStringInput)
-        , FloatInput(InFloatInput)
-        , FloatOutput(TDataWriteReferenceFactory<float>::CreateAny(InSettings))
-        , TriggerOutput(FTriggerWriteRef::CreateNew(InSettings))
-        , StringOutput(TDataWriteReferenceFactory<FString>::CreateAny(InSettings))
+    template <typename ValueType>
+    FExpressionOperator<ValueType>::FExpressionOperator(const FOperatorSettings& InSettings, const FStringReadRef& InStringInput, const TDataReadReference<ValueType>& InFloatInput)
+        : ExprInput(InStringInput)
+        , DataInput(InFloatInput)
+        , DataOutput(TDataWriteReferenceFactory<ValueType>::CreateAny(InSettings))
+        , ErrorTriggerOutput(FTriggerWriteRef::CreateNew(InSettings))
+        , ErrorMessageOutput(TDataWriteReferenceFactory<FString>::CreateAny(InSettings))
     {
     }
 
-    FExpressionFloatOperator::~FExpressionFloatOperator()
+    template <typename ValueType>
+    FExpressionOperator<ValueType>::~FExpressionOperator()
     {
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
 
@@ -26,41 +104,42 @@ namespace Metasound
 #endif
     }
 
-    FDataReferenceCollection FExpressionFloatOperator::GetInputs() const
+    template <typename ValueType>
+    FDataReferenceCollection FExpressionOperator<ValueType>::GetInputs() const
     {
         using namespace ExpressionFloatNode;
 
         FDataReferenceCollection InputDataReferences;
 
-        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameStringInput), StringInput);
-        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameFloatInput), FloatInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameExpr), ExprInput);
+        InputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(InParamNameData), DataInput);
 
         return InputDataReferences;
     }
 
-    FDataReferenceCollection FExpressionFloatOperator::GetOutputs() const
+    template <typename ValueType>
+    FDataReferenceCollection FExpressionOperator<ValueType>::GetOutputs() const
     {
         using namespace ExpressionFloatNode;
 
         FDataReferenceCollection OutputDataReferences;
 
-        OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameFloatOutput), FloatOutput);
-        OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameTriggerOutput), TriggerOutput);
-        OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameStringOutput), StringOutput);
+        OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameData), DataOutput);
+        OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameErrorTrigger), ErrorTriggerOutput);
+        OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameErrorMessage), ErrorMessageOutput);
 
 
         return OutputDataReferences;
     }
 
-    void FExpressionFloatOperator::Execute()
+    template <typename ValueType>
+    void FExpressionOperator<ValueType>::Execute()
     {
-        const float* InputFloat = FloatInput.Get();
-        const FString* InputString = StringInput.Get();
-        float* OutputFloat = FloatOutput.Get();
-        FString* OutputString = StringOutput.Get();
-        FTrigger* OutputTrigger = TriggerOutput.Get();
-
-        float Value;
+        const ValueType* InputData = DataInput.Get();
+        const FString* InputExpr = ExprInput.Get();
+        ValueType* OutputData = DataOutput.Get();
+        FString* OutputErrorMessage = ErrorMessageOutput.Get();
+        FTrigger* OutputErrorTrigger = ErrorTriggerOutput.Get();
 
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
         const std::string expression_string = std::string(TCHAR_TO_UTF8(**InputString));
@@ -81,10 +160,10 @@ namespace Metasound
         parser_t parser;
         parser.compile(expression_string, expression);
 
-        Value = expression.value();
+        *OutputFloat = expression.value();
 #elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
         // if the expression string has changed, free Expr
-        if (*InputString == LastExprString)
+        if (*InputExpr == LastExprString)
         {
             if (Expr)
             {
@@ -92,13 +171,14 @@ namespace Metasound
                 Expr = NULL;
             }
 
-            LastExprString = *InputString;
+            LastExprString = *InputExpr;
         }
 
         // if needs to compile
         if (Expr == NULL)
         {
-            const std::string expression = std::string(TCHAR_TO_UTF8(**InputString));
+            std::string expression = std::string(TCHAR_TO_UTF8(**InputExpr));
+            FExpressionOperatorPrivate::ToLower(expression);
 
             int err;
             // Compile the expression with variables.
@@ -106,82 +186,60 @@ namespace Metasound
             // Output error for failed compilation
             if (!Expr)
             {
-                UE_LOG(LogTemp, Log, TEXT("Error: Invalid expression; error at char %d"), err);
-                *OutputString = "Invalid expression; error at char " + FString::FromInt(err);
-                OutputTrigger->TriggerFrame(0);
+                if constexpr (LOG_COMPILE_ERRORS)
+                    UE_LOG(LogTemp, Log, TEXT("Error: Invalid expression; error at char %d"), err);
+                *OutputErrorMessage = "Invalid expression; error at char " + FString::FromInt(err);
+                OutputErrorTrigger->TriggerFrame(0);
             }
         }
 
         // if successfully compiled expression
         if (Expr)
         {
-            X = (double)*InputFloat;
-            Value = (float)te_eval(Expr);
+            FExpressionOperatorPrivate::TExpression<ValueType>::SampleExpression(Expr, X, *InputData, *OutputData);
         }
-
-        /*
-        const std::string expression = std::string(TCHAR_TO_UTF8(**InputString));
-        double x = (double)*InputFloat; // must be double for tinyexpr it seems
-        // Store variable names and pointers.
-        te_variable vars[] = { {"x", &x} };
-
-        int err;
-        // Compile the expression with variables.
-        te_expr* expr = te_compile(expression.c_str(), vars, 1, &err);
-
-        if (expr) {
-            Value = (float)te_eval(expr);
-
-            te_free(expr);
-        }
-        else {
-            UE_LOG(LogTemp, Log, TEXT("Error: Invalid expression; error at char %d"), err);
-            *OutputString = "Invalid expression; error at char " + FString::FromInt(err);
-            OutputTrigger->TriggerFrame(0);
-        }
-        */
 #else
-        Value = *InputFloat;
+        *OutputFloat = *InputFloat;
 #endif
-
-        *OutputFloat = Value;
     }
 
-    const FVertexInterface& FExpressionFloatOperator::GetVertexInterface()
+    template <typename ValueType>
+    const FVertexInterface& FExpressionOperator<ValueType>::GetVertexInterface()
     {
         using namespace ExpressionFloatNode;
 
         static const FVertexInterface Interface(
             FInputVertexInterface(
-                TInputDataVertex<FString>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameStringInput)),
-                TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameFloatInput))
+                TInputDataVertex<FString>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameExpr)),
+                TInputDataVertex<ValueType>(METASOUND_GET_PARAM_NAME_AND_METADATA(InParamNameData))
             ),
 
             FOutputVertexInterface(
-                TOutputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutParamNameFloatOutput)),
-                TOutputDataVertex<FTrigger>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutParamNameTriggerOutput)),
-                TOutputDataVertex<FString>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutParamNameStringOutput))
+                TOutputDataVertex<ValueType>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutParamNameData)),
+                TOutputDataVertex<FTrigger>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutParamNameErrorTrigger)),
+                TOutputDataVertex<FString>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutParamNameErrorMessage))
             )
         );
 
         return Interface;
     }
 
-    const FNodeClassMetadata& FExpressionFloatOperator::GetNodeInfo()
+    template <typename ValueType>
+    const FNodeClassMetadata& FExpressionOperator<ValueType>::GetNodeInfo()
     {
         auto InitNodeInfo = []() -> FNodeClassMetadata
         {
             FNodeClassMetadata Info;
 
-            Info.ClassName = { TEXT("UE"), TEXT("ExpressionFloat"), TEXT("Audio") };
+            Info.ClassName = { TEXT("UE"), TEXT("Expression"), GetMetasoundDataTypeName<ValueType>() };
             Info.MajorVersion = 1;
             Info.MinorVersion = 0;
-            Info.DisplayName = LOCTEXT("Metasound_ExpressionFloatDisplayName", "Expression (Float)");
-            Info.Description = LOCTEXT("Metasound_ExpressionFloatNodeDescription", "Computes expression for X.");
+            Info.DisplayName = METASOUND_LOCTEXT_FORMAT("Metasound_ExpressionDisplayName", "Expression ({0})", GetMetasoundDataTypeDisplayText<ValueType>());
+            Info.Description = LOCTEXT("Metasound_ExpressionNodeDescription", "Computes expression for X.");
             Info.Author = PluginAuthor;
             Info.PromptIfMissing = PluginNodeMissingPrompt;
             Info.DefaultInterface = GetVertexInterface();
-            Info.CategoryHierarchy = { LOCTEXT("Metasound_ExpressionFloatNodeCategory", "Math") };
+            Info.CategoryHierarchy = { LOCTEXT("Metasound_ExpressionNodeCategory", "Math") };
 
             return Info;
         };
@@ -191,30 +249,39 @@ namespace Metasound
         return Info;
     }
 
-    TUniquePtr<IOperator> FExpressionFloatOperator::CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors)
+    template <typename ValueType>
+    TUniquePtr<IOperator> FExpressionOperator<ValueType>::CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors)
     {
         using namespace ExpressionFloatNode;
 
         const FDataReferenceCollection& InputCollection = InParams.InputDataReferences;
         const FInputVertexInterface& InputInterface = GetVertexInterface().GetInputInterface();
 
-        FStringReadRef StringIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<FString>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameStringInput), InParams.OperatorSettings);
-        FFloatReadRef FloatIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<float>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameFloatInput), InParams.OperatorSettings);
+        FStringReadRef ExprIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<FString>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameExpr), InParams.OperatorSettings);
+        TDataReadReference<ValueType> DataIn = FExpressionOperatorPrivate::TExpression<ValueType>::CreateInRefData(InParams);
 
-        return MakeUnique<FExpressionFloatOperator>(InParams.OperatorSettings, StringIn, FloatIn);
+        return MakeUnique<FExpressionOperator>(InParams.OperatorSettings, ExprIn, DataIn);
     }
 
 
     //------------------------------------------------------------------------------------
-    // FExpressionFloatNode
+    // FExpressionNode
     //------------------------------------------------------------------------------------
-    FExpressionFloatNode::FExpressionFloatNode(const FNodeInitData& InitData)
-        : FNodeFacade(InitData.InstanceName, InitData.InstanceID, TFacadeOperatorClass<FExpressionFloatOperator>())
+    template <typename ValueType>
+    FExpressionNode<ValueType>::FExpressionNode(const FNodeInitData& InitData)
+        : FNodeFacade(InitData.InstanceName, InitData.InstanceID, TFacadeOperatorClass<FExpressionOperator<ValueType>>())
     {
 
     }
 
-    METASOUND_REGISTER_NODE(FExpressionFloatNode)
+    using FExpressionNodeFloat = FExpressionNode<float>;
+    METASOUND_REGISTER_NODE(FExpressionNodeFloat)
+
+        using FExpressionNodeAudio = FExpressionNode<FAudioBuffer>;
+    METASOUND_REGISTER_NODE(FExpressionNodeAudio)
+
+    template class FExpressionNode<float>;
+    template class FExpressionNode<FAudioBuffer>;
 }
 
 #undef LOCTEXT_NAMESPACE

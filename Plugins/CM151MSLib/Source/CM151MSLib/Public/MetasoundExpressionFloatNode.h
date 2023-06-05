@@ -24,28 +24,29 @@ namespace Metasound
 
     namespace ExpressionFloatNode
     {
-        METASOUND_PARAM(InParamNameStringInput, "Expr", "String input.")
-        METASOUND_PARAM(InParamNameFloatInput, "X", "Float input.")
-        METASOUND_PARAM(OutParamNameFloatOutput, "Out", "Float output.")
-        METASOUND_PARAM(OutParamNameTriggerOutput, "OnError", "Triggers on error.")
-        METASOUND_PARAM(OutParamNameStringOutput, "ErrorMsg", "Error message.")
+        METASOUND_PARAM(InParamNameExpr, "Expr", "String input.")
+        METASOUND_PARAM(InParamNameData, "X", "Float input.")
+        METASOUND_PARAM(OutParamNameData, "Out", "Float output.")
+        METASOUND_PARAM(OutParamNameErrorTrigger, "OnError", "Triggers on error.")
+        METASOUND_PARAM(OutParamNameErrorMessage, "ErrorMsg", "Error message.")
     }
 
 #undef LOCTEXT_NAMESPACE
 
 
     //------------------------------------------------------------------------------------
-    // FExpressionFloatOperator
+    // FExpressionOperator
     //------------------------------------------------------------------------------------
-    class FExpressionFloatOperator : public TExecutableOperator<FExpressionFloatOperator>
+    template <typename ValueType>
+    class FExpressionOperator : public TExecutableOperator<FExpressionOperator<ValueType>>
     {
     public:
         static const FNodeClassMetadata& GetNodeInfo();
         static const FVertexInterface& GetVertexInterface();
         static TUniquePtr<IOperator> CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors);
 
-        FExpressionFloatOperator(const FOperatorSettings& InSettings, const FStringReadRef& InStringInput, const FFloatReadRef& InFloatInput);
-        virtual ~FExpressionFloatOperator();
+        FExpressionOperator(const FOperatorSettings& InSettings, const FStringReadRef& InStringInput, const TDataReadReference<ValueType>& InFloatInput);
+        virtual ~FExpressionOperator();
 
         virtual FDataReferenceCollection GetInputs()  const override;
         virtual FDataReferenceCollection GetOutputs() const override;
@@ -53,11 +54,13 @@ namespace Metasound
         void Execute();
 
     private:
-        FStringReadRef StringInput;
-        FFloatReadRef  FloatInput;
-        FFloatWriteRef FloatOutput;
-        FTriggerWriteRef TriggerOutput;
-        FStringWriteRef StringOutput;
+        FStringReadRef ExprInput;
+        TDataReadReference<ValueType>  DataInput;
+        TDataWriteReference<ValueType> DataOutput;
+        FTriggerWriteRef ErrorTriggerOutput;
+        FStringWriteRef ErrorMessageOutput;
+
+        static constexpr bool LOG_COMPILE_ERRORS = true;
 
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
 
@@ -70,12 +73,13 @@ namespace Metasound
     };
 
     //------------------------------------------------------------------------------------
-    // FExpressionFloatNode
+    // FExpressionNode
     //------------------------------------------------------------------------------------
-    class FExpressionFloatNode : public FNodeFacade
+    template <typename ValueType>
+    class FExpressionNode : public FNodeFacade
     {
     public:
         // Constructor used by the Metasound Frontend.
-        FExpressionFloatNode(const FNodeInitData& InitData);
+        FExpressionNode(const FNodeInitData& InitData);
     };
 }
