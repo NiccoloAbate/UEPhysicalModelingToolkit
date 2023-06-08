@@ -3,28 +3,29 @@
 
 namespace Metasound
 {
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_SampleSine"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_Sine"
 
-    namespace SampleSineNode
+    namespace SineNode
     {
-        METASOUND_PARAM(InParamNameAudioInput, "In", "Audio input.")
-        METASOUND_PARAM(OutParamNameAudio, "Out", "Audio output.")
+        METASOUND_PARAM(InParamNameIn, "In", "Input, multiplied by 2PI.")
+        METASOUND_PARAM(OutParamNameOut, "Out", "Output, sin(in * 2PI).")
     }
 
 #undef LOCTEXT_NAMESPACE
 
 
     //------------------------------------------------------------------------------------
-    // FSamnpleSineOperator
+    // FSineOperator
     //------------------------------------------------------------------------------------
-    class FSamnpleSineOperator : public TExecutableOperator<FSamnpleSineOperator>
+    template <typename ValueType>
+    class FSineOperator : public TExecutableOperator<FSineOperator<ValueType>>
     {
     public:
         static const FNodeClassMetadata& GetNodeInfo();
         static const FVertexInterface& GetVertexInterface();
         static TUniquePtr<IOperator> CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors);
 
-        FSamnpleSineOperator(const FOperatorSettings& InSettings, const FAudioBufferReadRef& InAudioInput);
+        FSineOperator(const FOperatorSettings& InSettings, const TDataReadReference<ValueType>& InInInput);
 
         virtual FDataReferenceCollection GetInputs()  const override;
         virtual FDataReferenceCollection GetOutputs() const override;
@@ -32,17 +33,18 @@ namespace Metasound
         void Execute();
 
     private:
-        FAudioBufferReadRef  AudioInput;
-        FAudioBufferWriteRef AudioOutput;
+        TDataReadReference<ValueType>  InInput;
+        TDataWriteReference<ValueType> OutOutput;
     };
 
     //------------------------------------------------------------------------------------
-    // FSamnpleSineNode
+    // FSineNode
     //------------------------------------------------------------------------------------
-    class FSamnpleSineNode : public FNodeFacade
+    template <typename ValueType>
+    class FSineNode : public FNodeFacade
     {
     public:
         // Constructor used by the Metasound Frontend.
-        FSamnpleSineNode(const FNodeInitData& InitData);
+        FSineNode(const FNodeInitData& InitData);
     };
 }

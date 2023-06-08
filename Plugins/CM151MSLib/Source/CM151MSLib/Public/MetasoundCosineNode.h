@@ -3,28 +3,29 @@
 
 namespace Metasound
 {
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_SampleCosine"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_Cosine"
 
-    namespace SampleCosineNode
+    namespace CosineNode
     {
-        METASOUND_PARAM(InParamNameAudioInput, "In",        "Audio input.")
-        METASOUND_PARAM(OutParamNameAudio,     "Out",       "Audio output.")
+        METASOUND_PARAM(InParamNameIn, "In",        "Input, multiplied by 2PI.")
+        METASOUND_PARAM(OutParamNameOut,     "Out",       "Output, cos(in * 2PI).")
     }
 
 #undef LOCTEXT_NAMESPACE
 
 
     //------------------------------------------------------------------------------------
-    // FSamnpleCosineOperator
+    // FCosineOperator
     //------------------------------------------------------------------------------------
-    class FSamnpleCosineOperator : public TExecutableOperator<FSamnpleCosineOperator>
+    template <typename ValueType>
+    class FCosineOperator : public TExecutableOperator<FCosineOperator<ValueType>>
     {
     public:
         static const FNodeClassMetadata& GetNodeInfo();
         static const FVertexInterface& GetVertexInterface();
         static TUniquePtr<IOperator> CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors);
 
-        FSamnpleCosineOperator(const FOperatorSettings& InSettings, const FAudioBufferReadRef& InAudioInput);
+        FCosineOperator(const FOperatorSettings& InSettings, const TDataReadReference<ValueType>& InInInput);
 
         virtual FDataReferenceCollection GetInputs()  const override;
         virtual FDataReferenceCollection GetOutputs() const override;
@@ -32,17 +33,18 @@ namespace Metasound
         void Execute();
 
     private:
-        FAudioBufferReadRef  AudioInput;
-        FAudioBufferWriteRef AudioOutput;
+        TDataReadReference<ValueType>  InInput;
+        TDataWriteReference<ValueType> OutOutput;
     };
 
     //------------------------------------------------------------------------------------
-    // FSamnpleCosineNode
+    // FCosineNode
     //------------------------------------------------------------------------------------
-    class FSamnpleCosineNode : public FNodeFacade
+    template <typename ValueType>
+    class FCosineNode : public FNodeFacade
     {
     public:
         // Constructor used by the Metasound Frontend.
-        FSamnpleCosineNode(const FNodeInitData& InitData);
+        FCosineNode(const FNodeInitData& InitData);
     };
 }

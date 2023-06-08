@@ -30,7 +30,7 @@ namespace Metasound
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
 
 #elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
-            static void SampleExpression(te_expr* Expr, double& X, const float& In, float& Out)
+            static void SampleExpression(te_expr* Expr, double& X, const float In, float& Out)
             {
                 X = (double)In;
                 Out = (float)te_eval(Expr);
@@ -277,7 +277,7 @@ namespace Metasound
     using FExpressionNodeFloat = FExpressionNode<float>;
     METASOUND_REGISTER_NODE(FExpressionNodeFloat)
 
-        using FExpressionNodeAudio = FExpressionNode<FAudioBuffer>;
+    using FExpressionNodeAudio = FExpressionNode<FAudioBuffer>;
     METASOUND_REGISTER_NODE(FExpressionNodeAudio)
 
     template class FExpressionNode<float>;
