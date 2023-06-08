@@ -182,7 +182,7 @@ namespace Metasound
 
             int err;
             // Compile the expression with variables.
-            Expr = te_compile(expression.c_str(), Vars, 1, &err);
+            Expr = te_compile(expression.c_str(), Vars, nBindings, &err);
             // Output error for failed compilation
             if (!Expr)
             {

@@ -16,6 +16,18 @@
 #pragma pop_macro("verify")  // restore definition
 #elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
 #include "tinyexpr/tinyexpr.h"
+
+// use of std functions seems to cause errors, I think do to the references?
+//#define TINYEXPR_MIN static_cast<const double& (*)(const double&, const double&)>(&std::min<double>)
+//#define TINYEXPR_MAX static_cast<const double& (*)(const double&, const double&)>(&std::max<double>)
+//#define TINYEXPR_CLAMP static_cast<const double& (*)(const double&, const double&, const double&)>(&std::clamp<double>)
+
+double te_min(double a, double b) { return std::min(a, b); }
+double te_max(double a, double b) { return std::max(a, b); }
+double te_clamp(double x, double min, double max) { return std::clamp(x, min, max); }
+#define TINYEXPR_MIN te_min
+#define TINYEXPR_MAX te_max
+#define TINYEXPR_CLAMP te_clamp
 #endif
 
 namespace Metasound
@@ -67,7 +79,13 @@ namespace Metasound
 #elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
         FString LastExprString;
         double X;
-        te_variable Vars[1] = { { "x", &X } };
+        static constexpr int nBindings = 4;
+        te_variable Vars[nBindings] = {
+            { "x", &X, TE_VARIABLE },
+            { "min", &TINYEXPR_MIN, TE_FUNCTION2 },
+            { "max", &TINYEXPR_MAX, TE_FUNCTION2 },
+            { "clamp", &TINYEXPR_CLAMP, TE_FUNCTION3 },
+        };
         te_expr* Expr = NULL;
 #endif
     };

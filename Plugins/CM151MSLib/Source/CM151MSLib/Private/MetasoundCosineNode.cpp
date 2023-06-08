@@ -1,4 +1,4 @@
-#include "MetasoundSampleCosineNode.h"
+#include "MetasoundCosineNode.h"
 
 #define LOCTEXT_NAMESPACE "MetasoundStandardNodes_SampleCosineNode"
 
