@@ -2,6 +2,7 @@
 
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK || EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
 #include <string>
+#include <algorithm>
 #endif
 
 #define LOCTEXT_NAMESPACE "MetasoundStandardNodes_ExpressionNode"

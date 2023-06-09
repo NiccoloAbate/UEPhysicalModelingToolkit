@@ -1,6 +1,6 @@
 #include "MetasoundSubtractAudioFromFloatNode.h"
 
-#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_DivideFloatByAudioNode"
+#define LOCTEXT_NAMESPACE "MetasoundStandardNodes_SubtractAudioFromFloatNode"
 
 namespace Metasound
 {

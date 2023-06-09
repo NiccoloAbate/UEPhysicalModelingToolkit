@@ -18,13 +18,14 @@
 #include "tinyexpr/tinyexpr.h"
 
 // use of std functions seems to cause errors, I think do to the references?
+//#include <algorithm>
 //#define TINYEXPR_MIN static_cast<const double& (*)(const double&, const double&)>(&std::min<double>)
 //#define TINYEXPR_MAX static_cast<const double& (*)(const double&, const double&)>(&std::max<double>)
 //#define TINYEXPR_CLAMP static_cast<const double& (*)(const double&, const double&, const double&)>(&std::clamp<double>)
 
-double te_min(double a, double b) { return std::min(a, b); }
-double te_max(double a, double b) { return std::max(a, b); }
-double te_clamp(double x, double min, double max) { return std::clamp(x, min, max); }
+double te_min(double a, double b) { return a < b ? a : b; }
+double te_max(double a, double b) { return a > b ? a : b; }
+double te_clamp(double x, double min, double max) { return te_min(te_max(x, min), max); }
 #define TINYEXPR_MIN te_min
 #define TINYEXPR_MAX te_max
 #define TINYEXPR_CLAMP te_clamp
