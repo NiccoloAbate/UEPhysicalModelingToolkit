@@ -1,10 +1,10 @@
-UEAudioDSPTemplate.sln
+CMPM151_MS_Engine.sln
 .vs/
 Binaries/
 DerivedDataCache/
 Intermediate/
-Plugins/AudioDSPTemplate/Binaries/
-Plugins/AudioDSPTemplate/Intermediate/
+Plugins/CMPM151_MS_Engine/Binaries/
+Plugins/CMPM151_MS_Engine/Intermediate/
 Saved/
 Script/
 .vsconfig
