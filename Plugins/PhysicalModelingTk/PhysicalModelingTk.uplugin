@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "CM151MSLib",
-	"Description": "Basic Metasound Extended Library",
+	"FriendlyName": "Physical Modeling Toolkit",
+	"Description": "Physical Modeling Metasounds Library, including math operators, signal processors, and modelling graphs.",
 	"Category": "Audio",
 	"CreatedBy": "Niccolo Abate",
 	"CreatedByURL": "github.com/NiccoloAbate",
@@ -25,5 +25,7 @@
 			"Name": "Metasound",
 			"Enabled": true
 		}
-	]
+	],
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false
 }
