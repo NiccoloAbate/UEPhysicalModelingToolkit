@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.1",
+	"VersionName": "0.1.0",
 	"FriendlyName": "Physical Modeling Toolkit",
 	"Description": "Physical Modeling Metasounds Library, including math operators, signal processors, and modelling graphs.",
 	"Category": "Audio",
