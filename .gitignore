@@ -1,12 +1,15 @@
-CMPM151_MS_Engine.sln
+UEPhysicalModelingTk.sln
 .vs/
 Binaries/
 DerivedDataCache/
 Intermediate/
-Plugins/CMPM151_MS_Engine/Binaries/
-Plugins/CMPM151_MS_Engine/Intermediate/
+Plugins/UEPhysicalModelingTk/Binaries/
+Plugins/UEPhysicalModelingTk/Intermediate/
 Saved/
 Script/
 .vsconfig
 Config/DefaultInput.ini
 Config/HoloLens/HoloLensEngine.ini
+
+# renom data
+.renom/
