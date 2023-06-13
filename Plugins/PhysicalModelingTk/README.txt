@@ -1,4 +1,10 @@
-Small WIP Metasounds Extended Math Library Plugin
+Physical Modeling Library Metasounds Unreal Engine Plugin
+
+Please see https://github.com/NiccoloAbate/UEPhysicalModelingToolkit for full documentation.
+
+Installation:
+Create a "Plugins" folder in the root of your project and copy the CM151MSLib folder into the new folder. Now reopen your project.
+*Only tested on Windows system.
 
 Metasound Nodes:
 Cos and Sin nodes (Audio | Float)
@@ -13,7 +19,3 @@ Expression (Audio | Float) - nodes for parsing and computing arbitrary expressio
 
 Metasound Graph Nodes:
 Wrap (Audio) - just a graph containing the expression x - floor(x)
-
-Installation:
-Create a "Plugins" folder in the root of your project and copy the CM151MSLib folder into the new folder. Now reopen your project.
-*Only tested on Windows system.
