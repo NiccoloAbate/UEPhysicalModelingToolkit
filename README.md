@@ -1,10 +1,12 @@
 # UEPhysicalModelingToolkit
 Physical Modeling Library (Unreal Engine Plugin) including advanced Metasound math nodes and operators, signal processors, model Metasounds graphs (including machinery, nature, etc.), and more.
 
-![PluginStrip](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/d208bc2a-d26a-47a1-b212-f6bcc428c459)
+![PluginStrip](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/d29d66d3-0cab-4545-8c29-f65be72b21b1)
 
 # Download / Installation
-This repository can be cloned for access the full development project with example scenes included. Or the packaged plugin can be downloaded here, containing all the custom nodes and Metasound materials (models and patches).
+This repository can be cloned for access the full development project with example scenes included. Or the packaged plugin can be downloaded under releases, containing all the custom nodes and Metasound materials (models and patches).
+
+To install the plugin, simply copy the plugin folder from the zip under releases or directly from the project in the repository into a "Plugins" folder in your unreal project. Restart your project and the plugin should compile if necessary and be added to your project.
 
 # Plugin Content Overview
 * Metasound Nodes
