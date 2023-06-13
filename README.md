@@ -4,7 +4,7 @@ Physical Modeling Library (Unreal Engine Plugin) including advanced Metasound ma
 ![PluginStrip](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/258051b0-49bc-458d-9a92-068fb4d6633a)
 
 # Download / Installation
-Download the packaged plugin or full project source under [Releases](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/releases/latest).
+Download the packaged plugin zip or full project source under [Releases](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/releases/latest).
 
 To install the plugin, simply copy the plugin folder from the zip under releases or directly from the project in the repository into a "Plugins" folder in your unreal project. Restart your project and the plugin should compile if necessary and be added to your project.
 
