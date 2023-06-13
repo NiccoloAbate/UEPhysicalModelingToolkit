@@ -37,6 +37,10 @@
 		{
 			"Name": "MSNodes",
 			"Enabled": false
+		},
+		{
+			"Name": "PhysicalModelingTk",
+			"Enabled": true
 		}
 	]
 }
