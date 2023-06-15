@@ -12,9 +12,10 @@ To install the plugin, simply copy the plugin folder from the zip under releases
 
 # Plugin Content Overview
 * Metasound Nodes
-  * Cos and Sin nodes (Audio AND Float) - Compute trig functions at float or audio rate (sample by sample).
-  * Subtract operators (Float From Audio AND Audio From Float) - Audio subtraction operators for ease of access.
-  * Divide operators (Audio AND Float By Audio) - Audio division operators which aren't possible with the standard node library.
+  * Math Operators
+    * Cos and Sin nodes (Audio AND Float) - Compute trig functions at float or audio rate (sample by sample).
+    * Subtract operators (Float From Audio AND Audio From Float) - Audio subtraction operators for ease of access.
+    * Divide operators (Audio AND Float By Audio) - Audio division operators which aren't possible with the standard node library.
   * Expression nodes (Audio AND Float) - Powerful arbitrary expression node allowing for concise, unlimited, and even runtime determined math computations at float or audio rate (sample by sample).
 * Metasound Utility Patches
   * Wrap (Audio) - Expression "x - floor(x)".
@@ -24,8 +25,15 @@ To install the plugin, simply copy the plugin folder from the zip under releases
   * Lifeform Model - WIP lifeform model. Complicated model for generating lifeform sounds based on articulation parameters and physical characteristics of the lifeform.
   * Wind Physical Model - Complex wind model consisting of differenent individual wind type models (buildings, doorways, branches, and wires) which can be mixed for different types of wind.
 
+# Math Operators
+Various math operators and nodes not available in the standard Metasounds node library are critical for physical modeling and advanced processing.
+
+![CosAudioExample](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/fe5e6c80-c672-40cb-bcbf-9f988d1302fb)
+
 # Expression Nodes
 The arbitrary expression nodes (Audio AND Float) are invaluable nodes to have for physical modeling, as well as everyday Metasound productions.
+
+![ExpressionNodeExample](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/a3f81e8a-5884-4728-8373-1f4d23de2dea)
 
 The node parses given string expressions (for 1 argument "x") (currently using the [TinyExpr library](https://github.com/codeplea/tinyexpr) to compile expressions) and then computes and outputs the expression at float or audio rate (sample by samples).
 Specifically, the expression string is compiled when the string is updated, firing a trigger and error message out of the node in Metasounds as well as a log error if the expression is invalid.
