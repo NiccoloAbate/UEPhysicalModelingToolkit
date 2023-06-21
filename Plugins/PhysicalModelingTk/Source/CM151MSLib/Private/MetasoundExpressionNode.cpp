@@ -53,6 +53,9 @@ namespace Metasound
         }
     }
 
+    //------------------------------------------------------------------------------------
+    // FExpressionOperatorPrivate
+    //------------------------------------------------------------------------------------
     namespace FExpressionOperatorPrivate
     {
 #if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
@@ -244,13 +247,13 @@ namespace Metasound
         OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameErrorTrigger), ErrorTriggerOutput);
         OutputDataReferences.AddDataReadReference(METASOUND_GET_PARAM_NAME(OutParamNameErrorMessage), ErrorMessageOutput);
 
-
         return OutputDataReferences;
     }
 
     template <typename ValueType, uint32 NumArgs>
     void FExpressionOperator<ValueType, NumArgs>::Execute()
     {
+        // get non-data input and output pointers
         const FString* InputExpr = ExprInput.Get();
         FString* OutputErrorMessage = ErrorMessageOutput.Get();
         FTrigger* OutputErrorTrigger = ErrorTriggerOutput.Get();
@@ -307,7 +310,6 @@ namespace Metasound
                 if constexpr (LOG_COMPILE_ERRORS)
                 {
                     UE_LOG(LogTemp, Log, TEXT("Error: Invalid expression; error at char %d"), err);
-                    UE_LOG(LogTemp, Log, TEXT("V1: %s"), *FString(Vars[0].name));
                 }
                 *OutputErrorMessage = "Invalid expression; error at char " + FString::FromInt(err);
                 OutputErrorTrigger->TriggerFrame(0);
@@ -321,7 +323,7 @@ namespace Metasound
             FExpressionOperatorPrivate::TExpression<ValueType, NumArgs>::SampleExpression(Expr, X, DataInputs, DataOutput);
         }
 #else
-        *OutputFloat = *InputFloat;
+
 #endif
     }
 
@@ -344,6 +346,7 @@ namespace Metasound
                 )
             );
 
+            // add templated number of input vertices
             for (uint32 i = 0; i < NumArgs; ++i)
             {
                 const FDataVertexMetadata InputDataMetadata
@@ -396,8 +399,8 @@ namespace Metasound
         const FInputVertexInterface& InputInterface = GetVertexInterface().GetInputInterface();
 
         FStringReadRef ExprIn = InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<FString>(InputInterface, METASOUND_GET_PARAM_NAME(InParamNameExpr), InParams.OperatorSettings);
+        
         TArray<TDataReadReference<ValueType>> DataIns;
-
         for (uint32 i = 0; i < NumArgs; ++i)
         {
             DataIns.Add(FExpressionOperatorPrivate::TExpression<ValueType, NumArgs>::CreateInRefData(InParams, i));
