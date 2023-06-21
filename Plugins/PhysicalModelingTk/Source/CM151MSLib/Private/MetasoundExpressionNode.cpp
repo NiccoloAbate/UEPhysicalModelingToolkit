@@ -23,7 +23,6 @@ namespace Metasound
 
             return *FString::Format(TEXT("X{0}"), { InIndex });
         }
-
         const FText GetInputDataDescription(uint32 InIndex)
         {
             if (InIndex == 0)
@@ -31,13 +30,26 @@ namespace Metasound
 
             return METASOUND_LOCTEXT_FORMAT("ExpressionDataDesc", "Input argument X{0}.", InIndex);
         }
-
         const FText GetInputDataDisplayName(uint32 InIndex)
         {
             if (InIndex == 0)
                 return METASOUND_LOCTEXT("ExpressionDataDisplayName", "X");
 
             return METASOUND_LOCTEXT_FORMAT("ExpressionDataDisplayName", "X{0}", InIndex);
+        }
+        const FText GetNodeDescription(uint32 NumArgs)
+        {
+            switch (NumArgs)
+            {
+            case 0:
+                return LOCTEXT("Metasound_ExpressionNodeDescription", "Computes expression");
+            case 1:
+                return LOCTEXT("Metasound_ExpressionNodeDescription", "Computes expression for X / X0");
+            case 2:
+                return LOCTEXT("Metasound_ExpressionNodeDescription", "Computes expression for X / X0, X1");
+            default:
+                return LOCTEXT("Metasound_ExpressionNodeDescription", "Computes expression for X / X0, X1, ...");
+            }
         }
     }
 
@@ -97,8 +109,9 @@ namespace Metasound
             s.swap(buf);
         }
 
-        void TidyExpr(std::string& s)
+        void FormatExpr(std::string& s)
         {
+            ToLower(s);
             ReplaceAll(s, "x0", "x");
         }
 #endif
@@ -283,8 +296,7 @@ namespace Metasound
 
             // copy expression from input and format
             std::string expression = std::string(TCHAR_TO_UTF8(**InputExpr));
-            FExpressionOperatorPrivate::ToLower(expression);
-            FExpressionOperatorPrivate::TidyExpr(expression);
+            FExpressionOperatorPrivate::FormatExpr(expression);
 
             int err;
             // Compile the expression with variables.
@@ -361,7 +373,7 @@ namespace Metasound
             Info.MajorVersion = 1;
             Info.MinorVersion = 0;
             Info.DisplayName = METASOUND_LOCTEXT_FORMAT("Metasound_ExpressionDisplayName", "Expression ({0}, {1})", GetMetasoundDataTypeDisplayText<ValueType>(), NumArgs);
-            Info.Description = LOCTEXT("Metasound_ExpressionNodeDescription", "Computes expression for X0, X1, ...");
+            Info.Description = ExpressionNode::GetNodeDescription(NumArgs);
             Info.Author = PluginAuthor;
             Info.PromptIfMissing = PluginNodeMissingPrompt;
             Info.DefaultInterface = GetVertexInterface();
