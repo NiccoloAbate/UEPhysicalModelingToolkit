@@ -1,6 +1,8 @@
 #include "MetasoundEnumRegistrationMacro.h"
 #include "MetasoundParamHelper.h"
 
+#include <array>
+
 #define EXPRESSIONLIB_NONE 0
 #define EXPRESSIONLIB_EXPRTK 1
 #define EXPRESSIONLIB_TINYEXPR 2
@@ -16,26 +18,23 @@
 #pragma pop_macro("verify")  // restore definition
 #elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
 #include "tinyexpr/tinyexpr.h"
-
-// use of std functions seems to cause errors, I think do to the references?
-//#include <algorithm>
-//#define TINYEXPR_MIN static_cast<const double& (*)(const double&, const double&)>(&std::min<double>)
-//#define TINYEXPR_MAX static_cast<const double& (*)(const double&, const double&)>(&std::max<double>)
-//#define TINYEXPR_CLAMP static_cast<const double& (*)(const double&, const double&, const double&)>(&std::clamp<double>)
-
-double te_min(double a, double b) { return a < b ? a : b; }
-double te_max(double a, double b) { return a > b ? a : b; }
-double te_clamp(double x, double min, double max) { return te_min(te_max(x, min), max); }
-#define TINYEXPR_MIN te_min
-#define TINYEXPR_MAX te_max
-#define TINYEXPR_CLAMP te_clamp
 #endif
 
 namespace Metasound
 {
+
+    namespace FExpressionOperatorPrivate
+    {
+#if EXPRESSIONLIB == EXPRESSIONLIB_EXPRTK
+
+#elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
+        static constexpr int num_te_functions = 3;
+#endif
+    }
+
 #define LOCTEXT_NAMESPACE "MetasoundStandardNodes_Expression"
 
-    namespace ExpressionFloatNode
+    namespace ExpressionNode
     {
         METASOUND_PARAM(InParamNameExpr, "Expr", "String input.")
         METASOUND_PARAM(InParamNameData, "X", "Float input.")
@@ -50,15 +49,15 @@ namespace Metasound
     //------------------------------------------------------------------------------------
     // FExpressionOperator
     //------------------------------------------------------------------------------------
-    template <typename ValueType>
-    class FExpressionOperator : public TExecutableOperator<FExpressionOperator<ValueType>>
+    template <typename ValueType, uint32 NumArgs>
+    class FExpressionOperator : public TExecutableOperator<FExpressionOperator<ValueType, NumArgs>>
     {
     public:
         static const FNodeClassMetadata& GetNodeInfo();
         static const FVertexInterface& GetVertexInterface();
         static TUniquePtr<IOperator> CreateOperator(const FCreateOperatorParams& InParams, FBuildErrorArray& OutErrors);
 
-        FExpressionOperator(const FOperatorSettings& InSettings, const FStringReadRef& InStringInput, const TDataReadReference<ValueType>& InFloatInput);
+        FExpressionOperator(const FOperatorSettings& InSettings, const FStringReadRef& InExprInput, TArray<TDataReadReference<ValueType>>&& InDataInput);
         virtual ~FExpressionOperator();
 
         virtual FDataReferenceCollection GetInputs()  const override;
@@ -68,7 +67,7 @@ namespace Metasound
 
     private:
         FStringReadRef ExprInput;
-        TDataReadReference<ValueType>  DataInput;
+        TArray<TDataReadReference<ValueType>> DataInputs;
         TDataWriteReference<ValueType> DataOutput;
         FTriggerWriteRef ErrorTriggerOutput;
         FStringWriteRef ErrorMessageOutput;
@@ -79,14 +78,11 @@ namespace Metasound
 
 #elif EXPRESSIONLIB == EXPRESSIONLIB_TINYEXPR
         FString LastExprString;
-        double X;
-        static constexpr int nBindings = 4;
-        te_variable Vars[nBindings] = {
-            { "x", &X, TE_VARIABLE },
-            { "min", &TINYEXPR_MIN, TE_FUNCTION2 },
-            { "max", &TINYEXPR_MAX, TE_FUNCTION2 },
-            { "clamp", &TINYEXPR_CLAMP, TE_FUNCTION3 },
-        };
+        bool bNeedsToCompileExpression = false;
+        std::array<double, NumArgs> X;
+        std::array<std::string, NumArgs> VarNames;
+        static constexpr int nBindings = NumArgs + FExpressionOperatorPrivate::num_te_functions;
+        std::array<te_variable, nBindings> Vars;
         te_expr* Expr = NULL;
 #endif
     };
@@ -94,7 +90,7 @@ namespace Metasound
     //------------------------------------------------------------------------------------
     // FExpressionNode
     //------------------------------------------------------------------------------------
-    template <typename ValueType>
+    template <typename ValueType, uint32 NumArgs>
     class FExpressionNode : public FNodeFacade
     {
     public:
