@@ -2,6 +2,7 @@
 #include "MetasoundParamHelper.h"
 
 #include <array>
+#include <string>
 
 #define EXPRESSIONLIB_NONE 0
 #define EXPRESSIONLIB_EXPRTK 1

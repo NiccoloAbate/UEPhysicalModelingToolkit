@@ -56,7 +56,7 @@
 #include <vector>
 
 
-// this must be a horrible idea tbh...
+// this must be a horrible idea tbh... just done to make things compile, this should not be done and isn't being actually used
 #define __dynamic_cast__ reinterpret_cast
 
 

@@ -14,7 +14,7 @@ Divide (Audio)
 Divide (Float By Audio)
 Expression (Audio | Float) - nodes for parsing and computing arbitrary expressions from string representatation, using https://github.com/codeplea/tinyexpr to compile expressions.
 	moth operators "+", "-", "/", "*", and "%"
-	variable "x"
+	0-8 variable versions available "x" / "x0", "x1", "x2", ... -- lowercase or capital is ok.
 	available functions min, max, clamp, abs, acos, asin, atan, atan2, ceil, cos, cosh, exp, floor, ln (calls to log), log (calls to log10), log10, pow, sin, sinh, sqrt, tan, tanh
 
 Metasound Graph Nodes:
