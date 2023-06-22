@@ -1,7 +1,7 @@
 # UEPhysicalModelingToolkit
 Physical Modeling Library (Unreal Engine Plugin) including advanced Metasound math nodes and operators, signal processors, model Metasounds graphs (including machinery, nature, etc.), and more.
 
-![PluginStrip](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/05c523b5-172b-4f9e-8880-fe99903a2c9a)
+![PluginStrip](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/e604d3da-277a-40ba-81cf-cf5d404744da)
 
 YouTube Demonstration of the Plugin Available At: https://www.youtube.com/watch?v=mqzV9SYmdQ0
 
@@ -33,11 +33,12 @@ Various math operators and nodes not available in the standard Metasounds node l
 # Expression Nodes
 The arbitrary expression nodes (Audio AND Float) are invaluable nodes to have for physical modeling, as well as everyday Metasound productions.
 
-![ExpressionNodeExample](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/a3f81e8a-5884-4728-8373-1f4d23de2dea)
+![ExpressionNodeExample](https://github.com/NiccoloAbate/UEPhysicalModelingToolkit/assets/27022723/4bd91563-ef46-4ae8-8717-00f1d4274129)
 
-The node parses given string expressions (for 1 argument "x") (currently using the [TinyExpr library](https://github.com/codeplea/tinyexpr) to compile expressions) and then computes and outputs the expression at float or audio rate (sample by samples).
+The node parses given string expressions (currently using the [TinyExpr library](https://github.com/codeplea/tinyexpr) to compile expressions) and then computes and outputs the expression at float or audio rate (sample by samples).
 Specifically, the expression string is compiled when the string is updated, firing a trigger and error message out of the node in Metasounds as well as a log error if the expression is invalid.
 The successfully compiled expression will computed and output, or the unchanged input (or 0 in the case of no input variables) will be output if there is no successfully compiled expression.
+0 - 8 variables can be passed into the expression, "x" / "x0", "x1", "x2", ... -- Capitalization does not matter, all expressions are forced to lowercase before compilation.
 
 * Math Operators
   * "+", "-", "/", "*", and "%"
